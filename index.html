@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link rel="icon" href="data:,">
+    <title>璀璨圣诞树 · Merry Christmas</title>
+    <!-- Tailwind CSS is bundled locally via @tailwindcss/vite; MediaPipe scripts load on-demand -->
+    <style>
+      body {
+        margin: 0;
+        overflow: hidden;
+        background-color: #070b18;
+        font-family: 'Noto Serif SC', 'Songti SC', 'STSong', 'SimSun', 'Microsoft YaHei', serif;
+      }
+      canvas {
+        touch-action: none;
+      }
+      .font-display {
+        font-family: 'Playfair Display', 'Songti SC', 'STSong', 'SimSun', serif;
+      }
+      .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
+      .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,217,138,0.35); border-radius: 2px; }
+      @keyframes shimmer {
+        0%, 100% { opacity: 0.55; }
+        50% { opacity: 1; }
+      }
+      .shimmer { animation: shimmer 3s ease-in-out infinite; }
+      @keyframes snowfall-gradient {
+        0% { background-position: 0% 0%; }
+        100% { background-position: 0% 200%; }
+      }
+    </style>
+    <!-- 性能补丁 1：限制渲染像素比（高分屏 150% 缩放会渲染 1.5 倍像素，很吃显卡） -->
+    <!-- 性能补丁 2：探测显卡；软件渲染（没开硬件加速 / 远程桌面 / 虚拟显示器）自动切省电模式 -->
+    <!-- 性能补丁 3：进场后自动测帧，烫手就逐级降分辨率（1.25 → 0.9 → 0.75） -->
+    <script>
+      (function () {
+        var software = false;
+        try {
+          var c = document.createElement('canvas');
+          var gl = c.getContext('webgl2') || c.getContext('webgl');
+          if (gl) {
+            var dbg = gl.getExtension('WEBGL_debug_renderer_info');
+            var r = dbg ? gl.getParameter(dbg.UNMASKED_RENDERER_WEBGL) : gl.getParameter(gl.RENDERER);
+            if (/swiftshader|software|basic render|llvmpipe|mesa offscreen|microsoft basic/i.test(String(r))) {
+              software = true;
+            }
+            var lose = gl.getExtension('WEBGL_lose_context');
+            if (lose) lose.loseContext();
+          } else {
+            software = true;
+          }
+        } catch (e) { software = false; }
+
+        window.__CT_LITE__ = software;
+        window.__CT_GPU__ = software ? 'software' : 'hardware';
+
+        var real = window.devicePixelRatio || 1;
+        window.__CT_CAP__ = software ? 1 : Math.min(real, 1.25);
+
+        try {
+          Object.defineProperty(window, 'devicePixelRatio', {
+            configurable: true,
+            get: function () { return window.__CT_CAP__; }
+          });
+        } catch (e) { /* 忽略 */ }
+
+        function setCap(v) {
+          if (v >= window.__CT_CAP__) return;
+          window.__CT_CAP__ = v;
+          try { window.dispatchEvent(new Event('resize')); } catch (e) {}
+        }
+
+        function probe(ms, cb) {
+          var t0 = performance.now(), last = t0, sum = 0, n = 0;
+          (function f(now) {
+            var dt = now - last; last = now;
+            if (dt > 0 && dt < 400) { sum += dt; n++; }
+            if (now - t0 < ms) requestAnimationFrame(f);
+            else cb(sum / Math.max(1, n));
+          })(performance.now());
+        }
+
+        window.addEventListener('load', function () {
+          if (software) {
+            var tip = document.createElement('div');
+            tip.style.cssText = 'position:fixed;left:50%;top:14px;transform:translateX(-50%);z-index:99999;' +
+              'max-width:560px;padding:10px 14px;border-radius:12px;font:13px/1.6 system-ui,"Microsoft YaHei";' +
+              'background:rgba(30,12,12,.92);color:#ffd9a0;border:1px solid rgba(255,120,120,.5);' +
+              'box-shadow:0 8px 30px rgba(0,0,0,.5);cursor:pointer';
+            tip.textContent = '⚠ 检测到浏览器在用「软件渲染」（没吃到显卡），画面会很卡。点这里看解决办法';
+            tip.title = '点一下关闭';
+            tip.onclick = function () { tip.remove(); };
+            document.body.appendChild(tip);
+          }
+
+          setTimeout(function () {
+            probe(2200, function (avg1) {
+              if (avg1 > 26) {
+                setCap(0.9);
+                probe(1800, function (avg2) { if (avg2 > 26) setCap(0.75); });
+              }
+            });
+          }, 2600);
+        });
+      })();
+    </script>
+    <script type="module" crossorigin src="./assets/index-CZPyPNXc.js"></script>
+    <link rel="stylesheet" crossorigin href="./assets/index-BeE7YxDE.css">
+  </head>
+  <body>
+    <div id="root"></div>
+  </body>
+</html>
