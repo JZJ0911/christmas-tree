@@ -24,3 +24,10 @@ https://jzj0911.github.io/christmas-tree/
 3. 拖动旋转、滚轮缩放
 
 摄像头需要 HTTPS（GitHub Pages 已经是），本地双击打开无效。
+
+## 第二版改动（2026-11-22）
+
+- **去掉摄像头手势**：iOS Safari / 微信内置浏览器里 MediaPipe Hands 会在第一帧卡死（`frames 1 / results 0`），所以第二版直接隐藏手势入口，只保留触摸 / 鼠标交互：拖动旋转、滚轮或双指缩放、按住让星光绽放。
+- **BGM 单曲循环**：拦截 `Audio` 构造与 `HTMLMediaElement.play`，把音乐元素的 `loop` 置为 `true`，曲子（171.8s）放完自动从头再来。
+- 保留：软件渲染自动降档、`?lite` 手动开关、`?diag` 诊断浮层。
+
