@@ -20,6 +20,8 @@
         font-family: 'Playfair Display', 'Songti SC', 'STSong', 'SimSun', serif;
       }
       .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+      /* 第二版：纯触屏/鼠标交互，去掉摄像头手势，隐藏手势入口 */
+      button[title*="手势"], button[title*="摄像头"] { display: none !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,217,138,0.35); border-radius: 2px; }
       @keyframes shimmer {
@@ -32,6 +34,37 @@
         100% { background-position: 0% 200%; }
       }
     </style>
+    <!-- 第二版补丁：音乐强制单曲循环 + 不加载摄像头手势 -->
+    <script>
+      (function () {
+        // 1) 把所有 Audio / <audio> 元素都设成 loop，BGM 就不会停
+        try {
+          var OrigAudio = window.Audio;
+          function LoopAudio(src) {
+            var el = new OrigAudio(src);
+            try { el.loop = true; } catch (e) {}
+            return el;
+          }
+          LoopAudio.prototype = OrigAudio.prototype;
+          window.Audio = LoopAudio;
+        } catch (e) {}
+
+        function forceLoop() {
+          var els = document.querySelectorAll('audio, video');
+          for (var i = 0; i < els.length; i++) {
+            try { if (!els[i].loop) { els[i].loop = true; } } catch (e) {}
+          }
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', function () {
+            forceLoop();
+            var n = 0, t = setInterval(function () { forceLoop(); if (++n > 30) clearInterval(t); }, 500);
+          });
+        } else {
+          forceLoop();
+        }
+      })();
+    </script>
     <!-- 摄像头诊断：微信/QQ 内置浏览器没有 getUserMedia，直接给可读提示 -->
     <script>
       (function () {
