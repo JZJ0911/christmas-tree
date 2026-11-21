@@ -52,6 +52,24 @@
 
         var md = navigator.mediaDevices;
         if (!md || typeof md.getUserMedia !== 'function') {
+          // 装上「占位实现」：有的浏览器（微信/QQ 内置、部分安卓 WebView）根本没有
+          // mediaDevices，页面其它逻辑会因此直接崩掉，所以这里补一个只会失败的空壳。
+          var stub = {
+            getUserMedia: function () {
+              return Promise.reject(new DOMException('camera unsupported', 'NotSupportedError'));
+            },
+            getDisplayMedia: function () {
+              return Promise.reject(new DOMException('camera unsupported', 'NotSupportedError'));
+            },
+            enumerateDevices: function () { return Promise.resolve([]); },
+            addEventListener: function () {}, removeEventListener: function () {},
+            dispatchEvent: function () { return true; }
+          };
+          try {
+            Object.defineProperty(navigator, 'mediaDevices', {
+              configurable: true, enumerable: true, writable: true, value: stub
+            });
+          } catch (e) { try { navigator.mediaDevices = stub; } catch (e2) {} }
           document.addEventListener('DOMContentLoaded', function () {
             tip('这个浏览器不支持调用摄像头（微信 / QQ 内置浏览器里常见）。请点右上角「…」→「在浏览器中打开」，用 Safari 或 Chrome 再看');
           });
