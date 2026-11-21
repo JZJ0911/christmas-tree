@@ -201,7 +201,7 @@
             M.energy = energy;
             if (energy > M.maxEnergy) M.maxEnergy = energy;
 
-            var TH = 1.2;              // 判定为「在动」的阈值（画面变化像素占比 %）
+            var TH = 3.0;              // 判定为「在动」的阈值（画面变化像素占比 %）
             var moving = energy > TH;
             if (moving) { if (!down) { upAt = 0; } } else { if (!upAt) upAt = Date.now(); }
             if (moving && !down) {
