@@ -121,6 +121,32 @@
             tip('已检测到手 ✓：五指张开 或 拇指食指捏合 → 星光绽放；其它姿势是悬停，指尖位置牵引星光');
           }
         }, 1500);
+
+        // ?diag 诊断浮层：把 MediaPipe 的实时计数和 video 状态打在屏幕上，
+        // 方便一眼看出是「没检测到手」还是「画面根本没在走」。
+        if (/[?&]diag\b/.test(location.search)) {
+          var box = document.createElement('div');
+          box.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99998;padding:8px 10px;' +
+            'border-radius:10px;font:11px/1.5 ui-monospace,Consolas,monospace;white-space:pre;' +
+            'background:rgba(0,0,0,.78);color:#8ef0b0;border:1px solid rgba(120,255,180,.35);pointer-events:none';
+          document.addEventListener('DOMContentLoaded', function () {
+            document.body.appendChild(box);
+            setInterval(function () {
+              var d = window.__gestureDiag || {};
+              var v = document.querySelector('video');
+              var lines = [
+                'diag  ' + (window.__gestureDiag ? 'on' : 'off(点手势按钮)'),
+                'frames ' + (d.frames || 0) + '   results ' + (d.results || 0),
+                'noHand ' + (d.noHand || 0) + '   sendErr ' + (d.sendErrors || 0),
+                'hand   ' + (d.results ? (100 - Math.round((d.noHand || 0) * 100 / d.results)) + '% 检测到' : '-'),
+                'video  ' + (v ? (v.videoWidth + 'x' + v.videoHeight + ' rs' + v.readyState + (v.paused ? ' PAUSED' : ' play')) : 'none'),
+                'dpr ' + window.__CT_CAP__ + '  gpu ' + window.__CT_GPU__
+              ];
+              if (d.lastError) lines.push('err ' + String(d.lastError).slice(0, 40));
+              box.textContent = lines.join('\n');
+            }, 700);
+          });
+        }
       })();
     </script>
 
