@@ -106,8 +106,101 @@
           });
         };
 
+        // ---------------------------------------------------------------
+        // 备用「挥手模式」：不依赖 MediaPipe，用摄像头画面的运动量判断挥手，
+        // 再把动作翻译成 canvas 上的 pointer 事件（按住=绽放，左右移=转动）。
+        // 用于 MediaPipe 卡死的设备（iOS Safari / 微信内置浏览器）。
+        // ---------------------------------------------------------------
+        window.__CT_START_MOTION__ = function (reason) {
+          if (window.__CT_MOTION_ON) return;
+          window.__CT_MOTION_ON = true;
+
+          var M = { mock: false, energy: 0, x: 0.5, active: false, maxEnergy: 0 };
+          window.__CT_MOTION = M;
+
+          var cw = 64, ch = 48, cv = document.createElement('canvas');
+          cv.width = cw; cv.height = ch;
+          var cx2 = cv.getContext('2d', { willReadFrequently: true });
+          var prev = null, down = false, lastMove = 0;
+
+          function bigCanvas() {
+            var best = null, bestArea = 0;
+            var all = document.querySelectorAll('canvas');
+            for (var i = 0; i < all.length; i++) {
+              var r = all[i].getBoundingClientRect();
+              var a = r.width * r.height;
+              if (a > bestArea) { bestArea = a; best = all[i]; }
+            }
+            return best;
+          }
+
+          function fire(type, rx, ry, buttons) {
+            var el = bigCanvas();
+            if (!el) return;
+            var r = el.getBoundingClientRect();
+            var ev;
+            try {
+              ev = new PointerEvent(type, {
+                bubbles: true, cancelable: true, composed: true,
+                clientX: r.left + rx * r.width, clientY: r.top + ry * r.height,
+                pointerId: 77, pointerType: 'touch', isPrimary: true,
+                button: type === 'pointerup' ? -1 : 0, buttons: buttons
+              });
+            } catch (e) { return; }
+            el.dispatchEvent(ev);
+          }
+
+          function tick() {
+            var v = document.querySelector('video');
+            var energy = 0, cxr = M.x;
+            if (M.mock) {
+              energy = M.energy; cxr = M.x;
+            } else if (v && v.readyState >= 2 && cx2) {
+              try {
+                cx2.drawImage(v, 0, 0, cw, ch);
+                var cur = cx2.getImageData(0, 0, cw, ch).data;
+                if (prev) {
+                  var sum = 0, wx = 0, wsum = 0;
+                  for (var i = 0; i < cur.length; i += 4) {
+                    var g1 = (cur[i] * 0.3 + cur[i + 1] * 0.59 + cur[i + 2] * 0.11);
+                    var g0 = (prev[i] * 0.3 + prev[i + 1] * 0.59 + prev[i + 2] * 0.11);
+                    var d = Math.abs(g1 - g0);
+                    sum += d;
+                    var px = (i / 4) % cw;
+                    wx += d * px; wsum += d;
+                  }
+                  energy = sum / (cw * ch);
+                  if (wsum > 1) cxr = 1 - (wx / wsum) / cw; // 镜像，和前置摄像头一致
+                }
+                prev = cur;
+              } catch (e) { energy = 0; }
+            }
+            M.energy = energy;
+            if (energy > M.maxEnergy) M.maxEnergy = energy;
+
+            var TH = 3.2;              // 判定为「在动」的阈值（0-255 灰度差均值）
+            var moving = energy > TH;
+            if (moving && !down) {
+              down = true; M.active = true;
+              fire('pointerdown', cxr, 0.5, 1);   // 按住 → 星光绽放
+              lastMove = Date.now();
+            } else if (moving && down) {
+              if (Date.now() - lastMove > 90) {
+                fire('pointermove', cxr, 0.5, 1); // 左右移动 → 转动
+                lastMove = Date.now();
+              }
+            } else if (!moving && down && energy < TH * 0.5) {
+              down = false; M.active = false;
+              fire('pointerup', cxr, 0.5, 0);
+            }
+          }
+          setInterval(tick, 110);
+
+          tip(reason || '已切到「挥手模式」：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转');
+        };
+
         // 手势状态看门狗：页面里有 window.__gestureDiag = {frames,results,noHand,...}
-        // 三种情况分别给提示：引擎卡死 / 认不出手 / 认出上手怎么玩
+        // 三种情况分别给提示：引擎卡死（自动切挥手模式）/ 认不出手 / 认出上手怎么玩
         var hintShown = false, stallShown = false, diagSince = 0;
         setInterval(function () {
           var d = window.__gestureDiag;
@@ -115,10 +208,10 @@
           if (!diagSince) diagSince = Date.now();
           var elapsed = Date.now() - diagSince;
 
-          // 收到画面但一帧都没算完 → send() 卡住（微信/WKWebView 里常见）
-          if (!stallShown && d.frames >= 1 && d.results === 0 && elapsed > 10000) {
+          // 收到画面但一帧都没算完 → send() 卡死（iOS Safari / 微信里常见）→ 自动切换
+          if (!stallShown && d.frames >= 1 && d.results === 0 && elapsed > 9000) {
             stallShown = true;
-            tip('手势引擎卡住了：画面进来了，但一帧都没算完。这通常是微信内置浏览器的限制——点右上角「…」→「在浏览器中打开」，用 Safari 再试');
+            window.__CT_START_MOTION__('这台设备跑不动手势引擎，已自动切到「挥手模式」：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转');
             return;
           }
           if (!d.results || d.results < 15 || hintShown) return;
@@ -130,7 +223,14 @@
             hintShown = true;
             tip('已检测到手 ✓：五指张开 或 拇指食指捏合 → 星光绽放；其它姿势是悬停，指尖位置牵引星光');
           }
-        }, 1500);
+        }, 1200);
+
+        // ?motion 直接进挥手模式（不等 MediaPipe 卡死），方便调试
+        if (/[?&]motion\b/.test(location.search)) {
+          document.addEventListener('DOMContentLoaded', function () {
+            setTimeout(function () { window.__CT_START_MOTION__('挥手模式已开启：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转'); }, 800);
+          });
+        }
 
         // ?diag 诊断浮层：把 MediaPipe 的实时计数和 video 状态打在屏幕上，
         // 方便一眼看出是「没检测到手」还是「画面根本没在走」。
