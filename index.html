@@ -121,7 +121,24 @@
           var cw = 64, ch = 48, cv = document.createElement('canvas');
           cv.width = cw; cv.height = ch;
           var cx2 = cv.getContext('2d', { willReadFrequently: true });
-          var prev = null, down = false, lastMove = 0, upAt = 0;
+          var prev = null, down = false, lastMove = 0, upAt = 0, ownVideo = null;
+
+          // 没有现成的摄像头画面（比如直接开 ?motion）就自己开一个，放在屏幕外
+          setTimeout(function () {
+            if (document.querySelector('video')) return;
+            if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
+            navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false })
+              .then(function (s) {
+                ownVideo = document.createElement('video');
+                ownVideo.autoplay = true; ownVideo.muted = true; ownVideo.playsInline = true;
+                ownVideo.setAttribute('playsinline', '');
+                ownVideo.style.cssText = 'position:fixed;left:-9999px;top:0;width:2px;height:2px;opacity:0;pointer-events:none';
+                ownVideo.srcObject = s;
+                document.body.appendChild(ownVideo);
+                ownVideo.play().catch(function () {});
+              })
+              .catch(function (e) { tip('摄像头打不开（' + ((e && e.name) || '未知') + '），挥手模式用不了，可以直接用手指拖动旋转'); });
+          }, 1200);
 
           function bigCanvas() {
             var best = null, bestArea = 0;
@@ -184,7 +201,7 @@
             M.energy = energy;
             if (energy > M.maxEnergy) M.maxEnergy = energy;
 
-            var TH = 2.5;              // 判定为「在动」的阈值（画面变化像素占比 %）
+            var TH = 1.2;              // 判定为「在动」的阈值（画面变化像素占比 %）
             var moving = energy > TH;
             if (moving) { if (!down) { upAt = 0; } } else { if (!upAt) upAt = Date.now(); }
             if (moving && !down) {
@@ -259,6 +276,11 @@
                 'video  ' + (v ? (v.videoWidth + 'x' + v.videoHeight + ' rs' + v.readyState + (v.paused ? ' PAUSED' : ' play')) : 'none'),
                 'dpr ' + window.__CT_CAP__ + '  gpu ' + window.__CT_GPU__
               ];
+              if (window.__CT_MOTION) {
+                lines.push('motion ' + (window.__CT_MOTION.mock ? 'MOCK ' : '') +
+                  'energy ' + (+window.__CT_MOTION.energy || 0).toFixed(2) + '%' +
+                  '  ' + (window.__CT_MOTION.active ? 'ACTIVE' : 'idle'));
+              }
               if (d.lastError) lines.push('err ' + String(d.lastError).slice(0, 40));
               box.textContent = lines.join('\n');
             }, 700);
