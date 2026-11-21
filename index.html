@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="data:,">
-    <title>璀璨圣诞树 · Merry Christmas</title>
+    <title>鐠€鐠ㄥ湥璇炴爲 路 Merry Christmas</title>
     <!-- Tailwind CSS is bundled locally via @tailwindcss/vite; MediaPipe scripts load on-demand -->
     <style>
       body {
@@ -16,7 +16,7 @@
       canvas {
         touch-action: none;
       }
-      /* iOS：禁止长按选中文字/弹系统菜单，否则「按住绽放」会被系统手势吃掉 */
+      /* iOS锛氱姝㈤暱鎸夐€変腑鏂囧瓧/寮圭郴缁熻彍鍗曪紝鍚﹀垯銆屾寜浣忕唤鏀俱€嶄細琚郴缁熸墜鍔垮悆鎺?*/
       html, body {
         -webkit-user-select: none;
         -moz-user-select: none;
@@ -28,8 +28,8 @@
         font-family: 'Playfair Display', 'Songti SC', 'STSong', 'SimSun', serif;
       }
       .custom-scrollbar::-webkit-scrollbar { width: 4px; }
-      /* 第二版：纯触屏/鼠标交互，去掉摄像头手势，隐藏手势入口 */
-      button[title*="手势"], button[title*="摄像头"] { display: none !important; }
+      /* 绗簩鐗堬細绾Е灞?榧犳爣浜や簰锛屽幓鎺夋憚鍍忓ご鎵嬪娍锛岄殣钘忔墜鍔垮叆鍙?*/
+      button[title*="鎵嬪娍"], button[title*="鎽勫儚澶?] { display: none !important; }
       .custom-scrollbar::-webkit-scrollbar-track { background: rgba(255,255,255,0.03); }
       .custom-scrollbar::-webkit-scrollbar-thumb { background: rgba(255,217,138,0.35); border-radius: 2px; }
       @keyframes shimmer {
@@ -42,10 +42,10 @@
         100% { background-position: 0% 200%; }
       }
     </style>
-    <!-- 第二版补丁：音乐强制单曲循环 + 不加载摄像头手势 -->
+    <!-- 绗簩鐗堣ˉ涓侊細闊充箰寮哄埗鍗曟洸寰幆 + 涓嶅姞杞芥憚鍍忓ご鎵嬪娍 -->
     <script>
       (function () {
-        // 1) 把所有 Audio / <audio> 元素都设成 loop，BGM 就不会停
+        // 1) 鎶婃墍鏈?Audio / <audio> 鍏冪礌閮借鎴?loop锛孊GM 灏变笉浼氬仠
         try {
           var OrigAudio = window.Audio;
           function LoopAudio(src) {
@@ -63,10 +63,9 @@
             try { if (!els[i].loop) { els[i].loop = true; } } catch (e) {}
           }
         }
-        // 3) iOS 长按会弹「拷贝/存储图像」菜单，直接拦掉，让按住手势能一直生效
-        document.addEventListener('contextmenu', function (e) { e.preventDefault(); }, true);
-        document.addEventListener('selectstart', function (e) { e.preventDefault(); }, true);
-        // 2) 兜底：任何媒体元素一播放就把它设成循环（BGM 走的是 new Audio，不一定挂在 DOM 上）
+        // 3) iOS 闀挎寜浼氬脊銆屾嫹璐?瀛樺偍鍥惧儚銆嶈彍鍗曪紝鐩存帴鎷︽帀锛岃鎸変綇鎵嬪娍鑳戒竴鐩寸敓鏁?        document.addEventListener('contextmenu', function (e) { e.preventDefault(); }, true);
+        document.addEventListener('selectstart', function (e) { e.preventDefault(); return false; }, true);
+        // 2) 鍏滃簳锛氫换浣曞獟浣撳厓绱犱竴鎾斁灏辨妸瀹冭鎴愬惊鐜紙BGM 璧扮殑鏄?new Audio锛屼笉涓€瀹氭寕鍦?DOM 涓婏級
         try {
           var origPlay = HTMLMediaElement.prototype.play;
           HTMLMediaElement.prototype.play = function () {
@@ -96,7 +95,7 @@
         }
       })();
     </script>
-    <!-- 摄像头诊断：微信/QQ 内置浏览器没有 getUserMedia，直接给可读提示 -->
+    <!-- 鎽勫儚澶磋瘖鏂細寰俊/QQ 鍐呯疆娴忚鍣ㄦ病鏈?getUserMedia锛岀洿鎺ョ粰鍙鎻愮ず -->
     <script>
       (function () {
         var shown = false;
@@ -108,7 +107,7 @@
             'max-width:88vw;padding:12px 16px;border-radius:14px;font:14px/1.65 system-ui,"Microsoft YaHei",sans-serif;' +
             'background:rgba(40,14,14,.95);color:#ffe0b8;border:1px solid rgba(255,140,120,.55);' +
             'box-shadow:0 10px 34px rgba(0,0,0,.55);cursor:pointer;text-align:left';
-          d.textContent = msg + '（点此关闭）';
+          d.textContent = msg + '锛堢偣姝ゅ叧闂級';
           d.onclick = function () { d.remove(); shown = false; };
           (document.body || document.documentElement).appendChild(d);
         }
@@ -116,9 +115,7 @@
 
         var md = navigator.mediaDevices;
         if (!md || typeof md.getUserMedia !== 'function') {
-          // 装上「占位实现」：有的浏览器（微信/QQ 内置、部分安卓 WebView）根本没有
-          // mediaDevices，页面其它逻辑会因此直接崩掉，所以这里补一个只会失败的空壳。
-          var stub = {
+          // 瑁呬笂銆屽崰浣嶅疄鐜般€嶏細鏈夌殑娴忚鍣紙寰俊/QQ 鍐呯疆銆侀儴鍒嗗畨鍗?WebView锛夋牴鏈病鏈?          // mediaDevices锛岄〉闈㈠叾瀹冮€昏緫浼氬洜姝ょ洿鎺ュ穿鎺夛紝鎵€浠ヨ繖閲岃ˉ涓€涓彧浼氬け璐ョ殑绌哄３銆?          var stub = {
             getUserMedia: function () {
               return Promise.reject(new DOMException('camera unsupported', 'NotSupportedError'));
             },
@@ -135,15 +132,13 @@
             });
           } catch (e) { try { navigator.mediaDevices = stub; } catch (e2) {} }
           document.addEventListener('DOMContentLoaded', function () {
-            tip('这个浏览器不支持调用摄像头（微信 / QQ 内置浏览器里常见）。请点右上角「…」→「在浏览器中打开」，用 Safari 或 Chrome 再看');
+            tip('杩欎釜娴忚鍣ㄤ笉鏀寔璋冪敤鎽勫儚澶达紙寰俊 / QQ 鍐呯疆娴忚鍣ㄩ噷甯歌锛夈€傝鐐瑰彸涓婅銆屸€︺€嶁啋銆屽湪娴忚鍣ㄤ腑鎵撳紑銆嶏紝鐢?Safari 鎴?Chrome 鍐嶇湅');
           });
           return;
         }
         var orig = md.getUserMedia.bind(md);
         navigator.mediaDevices.getUserMedia = function (c) {
-          // 强制前置摄像头 + 合适分辨率：安卓上默认可能开成后置，画面里没有手，
-          // 表现就是「一直手势识别中但没反应」。
-          var cc = c;
+          // 寮哄埗鍓嶇疆鎽勫儚澶?+ 鍚堥€傚垎杈ㄧ巼锛氬畨鍗撲笂榛樿鍙兘寮€鎴愬悗缃紝鐢婚潰閲屾病鏈夋墜锛?          // 琛ㄧ幇灏辨槸銆屼竴鐩存墜鍔胯瘑鍒腑浣嗘病鍙嶅簲銆嶃€?          var cc = c;
           try {
             if (c && c.video) {
               var v = (typeof c.video === 'object' && c.video) ? c.video : {};
@@ -159,22 +154,20 @@
             }
           } catch (e) {}
           return orig(cc).catch(function (e) {
-            var n = (e && e.name) || '未知错误';
+            var n = (e && e.name) || '鏈煡閿欒';
             var msg = n === 'NotAllowedError'
-              ? '摄像头权限被拒绝了。请在浏览器/系统里允许本页面使用摄像头，然后刷新重试'
+              ? '鎽勫儚澶存潈闄愯鎷掔粷浜嗐€傝鍦ㄦ祻瑙堝櫒/绯荤粺閲屽厑璁告湰椤甸潰浣跨敤鎽勫儚澶达紝鐒跺悗鍒锋柊閲嶈瘯'
               : n === 'NotFoundError'
-                ? '没找到可用的摄像头'
-                : '摄像头打不开（' + n + '）。如果是微信里打开的，请改用 Safari / Chrome';
+                ? '娌℃壘鍒板彲鐢ㄧ殑鎽勫儚澶?
+                : '鎽勫儚澶存墦涓嶅紑锛? + n + '锛夈€傚鏋滄槸寰俊閲屾墦寮€鐨勶紝璇锋敼鐢?Safari / Chrome';
             tip(msg);
             throw e;
           });
         };
 
         // ---------------------------------------------------------------
-        // 备用「挥手模式」：不依赖 MediaPipe，用摄像头画面的运动量判断挥手，
-        // 再把动作翻译成 canvas 上的 pointer 事件（按住=绽放，左右移=转动）。
-        // 用于 MediaPipe 卡死的设备（iOS Safari / 微信内置浏览器）。
-        // ---------------------------------------------------------------
+        // 澶囩敤銆屾尌鎵嬫ā寮忋€嶏細涓嶄緷璧?MediaPipe锛岀敤鎽勫儚澶寸敾闈㈢殑杩愬姩閲忓垽鏂尌鎵嬶紝
+        // 鍐嶆妸鍔ㄤ綔缈昏瘧鎴?canvas 涓婄殑 pointer 浜嬩欢锛堟寜浣?缁芥斁锛屽乏鍙崇Щ=杞姩锛夈€?        // 鐢ㄤ簬 MediaPipe 鍗℃鐨勮澶囷紙iOS Safari / 寰俊鍐呯疆娴忚鍣級銆?        // ---------------------------------------------------------------
         window.__CT_START_MOTION__ = function (reason) {
           if (window.__CT_MOTION_ON) return;
           window.__CT_MOTION_ON = true;
@@ -187,8 +180,7 @@
           var cx2 = cv.getContext('2d', { willReadFrequently: true });
           var prev = null, down = false, lastMove = 0, upAt = 0, ownVideo = null;
 
-          // 没有现成的摄像头画面（比如直接开 ?motion）就自己开一个，放在屏幕外
-          setTimeout(function () {
+          // 娌℃湁鐜版垚鐨勬憚鍍忓ご鐢婚潰锛堟瘮濡傜洿鎺ュ紑 ?motion锛夊氨鑷繁寮€涓€涓紝鏀惧湪灞忓箷澶?          setTimeout(function () {
             if (document.querySelector('video')) return;
             if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) return;
             navigator.mediaDevices.getUserMedia({ video: { facingMode: { ideal: 'user' }, width: { ideal: 640 }, height: { ideal: 480 } }, audio: false })
@@ -201,7 +193,7 @@
                 document.body.appendChild(ownVideo);
                 ownVideo.play().catch(function () {});
               })
-              .catch(function (e) { tip('摄像头打不开（' + ((e && e.name) || '未知') + '），挥手模式用不了，可以直接用手指拖动旋转'); });
+              .catch(function (e) { tip('鎽勫儚澶存墦涓嶅紑锛? + ((e && e.name) || '鏈煡') + '锛夛紝鎸ユ墜妯″紡鐢ㄤ笉浜嗭紝鍙互鐩存帴鐢ㄦ墜鎸囨嫋鍔ㄦ棆杞?); });
           }, 1200);
 
           function bigCanvas() {
@@ -243,9 +235,8 @@
                 cx2.drawImage(v, 0, 0, cw, ch);
                 var cur = cx2.getImageData(0, 0, cw, ch).data;
                 if (prev) {
-                  // 只统计「变化明显」的像素（>18 灰度），这样自动曝光/噪点不会误触发，
-                  // energy 就是「画面里有多大比例在动」，单位是百分比。
-                  var hits = 0, wx = 0, wsum = 0;
+                  // 鍙粺璁°€屽彉鍖栨槑鏄俱€嶇殑鍍忕礌锛?18 鐏板害锛夛紝杩欐牱鑷姩鏇濆厜/鍣偣涓嶄細璇Е鍙戯紝
+                  // energy 灏辨槸銆岀敾闈㈤噷鏈夊澶ф瘮渚嬪湪鍔ㄣ€嶏紝鍗曚綅鏄櫨鍒嗘瘮銆?                  var hits = 0, wx = 0, wsum = 0;
                   for (var i = 0; i < cur.length; i += 4) {
                     var g1 = (cur[i] * 0.3 + cur[i + 1] * 0.59 + cur[i + 2] * 0.11);
                     var g0 = (prev[i] * 0.3 + prev[i + 1] * 0.59 + prev[i + 2] * 0.11);
@@ -257,24 +248,22 @@
                     }
                   }
                   energy = hits / (cw * ch) * 100;
-                  if (wsum > 1) cxr = 1 - (wx / wsum) / cw; // 镜像，和前置摄像头一致
-                }
+                  if (wsum > 1) cxr = 1 - (wx / wsum) / cw; // 闀滃儚锛屽拰鍓嶇疆鎽勫儚澶翠竴鑷?                }
                 prev = cur;
               } catch (e) { energy = 0; }
             }
             M.energy = energy;
             if (energy > M.maxEnergy) M.maxEnergy = energy;
 
-            var TH = 3.0;              // 判定为「在动」的阈值（画面变化像素占比 %）
-            var moving = energy > TH;
+            var TH = 3.0;              // 鍒ゅ畾涓恒€屽湪鍔ㄣ€嶇殑闃堝€硷紙鐢婚潰鍙樺寲鍍忕礌鍗犳瘮 %锛?            var moving = energy > TH;
             if (moving) { if (!down) { upAt = 0; } } else { if (!upAt) upAt = Date.now(); }
             if (moving && !down) {
               down = true; M.active = true;
-              fire('pointerdown', cxr, 0.5, 1);   // 按住 → 星光绽放
+              fire('pointerdown', cxr, 0.5, 1);   // 鎸変綇 鈫?鏄熷厜缁芥斁
               lastMove = Date.now();
             } else if (moving && down) {
               if (Date.now() - lastMove > 90) {
-                fire('pointermove', cxr, 0.5, 1); // 左右移动 → 转动
+                fire('pointermove', cxr, 0.5, 1); // 宸﹀彸绉诲姩 鈫?杞姩
                 lastMove = Date.now();
               }
             } else if (!moving && down && upAt && Date.now() - upAt > 320) {
@@ -284,45 +273,42 @@
           }
           setInterval(tick, 110);
 
-          tip(reason || '已切到「挥手模式」：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转');
+          tip(reason || '宸插垏鍒般€屾尌鎵嬫ā寮忋€嶏細瀵圭潃闀滃ご鎸ユ墜 鈫?鏄熷厜缁芥斁锛涙墜宸﹀彸绉诲姩 鈫?鏍戣窡鐫€杞?);
         };
 
-        // 手势状态看门狗：页面里有 window.__gestureDiag = {frames,results,noHand,...}
-        // 三种情况分别给提示：引擎卡死（自动切挥手模式）/ 认不出手 / 认出上手怎么玩
-        var hintShown = false, stallShown = false, diagSince = 0;
+        // 鎵嬪娍鐘舵€佺湅闂ㄧ嫍锛氶〉闈㈤噷鏈?window.__gestureDiag = {frames,results,noHand,...}
+        // 涓夌鎯呭喌鍒嗗埆缁欐彁绀猴細寮曟搸鍗℃锛堣嚜鍔ㄥ垏鎸ユ墜妯″紡锛? 璁や笉鍑烘墜 / 璁ゅ嚭涓婃墜鎬庝箞鐜?        var hintShown = false, stallShown = false, diagSince = 0;
         setInterval(function () {
           var d = window.__gestureDiag;
           if (!d) { diagSince = 0; return; }
           if (!diagSince) diagSince = Date.now();
           var elapsed = Date.now() - diagSince;
 
-          // 收到画面但一帧都没算完 → send() 卡死（iOS Safari / 微信里常见）→ 自动切换
+          // 鏀跺埌鐢婚潰浣嗕竴甯ч兘娌＄畻瀹?鈫?send() 鍗℃锛坕OS Safari / 寰俊閲屽父瑙侊級鈫?鑷姩鍒囨崲
           if (!stallShown && d.frames >= 1 && d.results === 0 && elapsed > 9000) {
             stallShown = true;
-            window.__CT_START_MOTION__('这台设备跑不动手势引擎，已自动切到「挥手模式」：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转');
+            window.__CT_START_MOTION__('杩欏彴璁惧璺戜笉鍔ㄦ墜鍔垮紩鎿庯紝宸茶嚜鍔ㄥ垏鍒般€屾尌鎵嬫ā寮忋€嶏細瀵圭潃闀滃ご鎸ユ墜 鈫?鏄熷厜缁芥斁锛涙墜宸﹀彸绉诲姩 鈫?鏍戣窡鐫€杞?);
             return;
           }
           if (!d.results || d.results < 15 || hintShown) return;
           var ratio = d.noHand / d.results;
           if (ratio > 0.95) {
             hintShown = true;
-            tip('镜头里看到画面，但没认出你的手：把手退到离镜头 30~50 厘米，让手腕到指尖整只手都在框里，别背光，五指张开停 1 秒');
+            tip('闀滃ご閲岀湅鍒扮敾闈紝浣嗘病璁ゅ嚭浣犵殑鎵嬶細鎶婃墜閫€鍒扮闀滃ご 30~50 鍘樼背锛岃鎵嬭厱鍒版寚灏栨暣鍙墜閮藉湪妗嗛噷锛屽埆鑳屽厜锛屼簲鎸囧紶寮€鍋?1 绉?);
           } else {
             hintShown = true;
-            tip('已检测到手 ✓：五指张开 或 拇指食指捏合 → 星光绽放；其它姿势是悬停，指尖位置牵引星光');
+            tip('宸叉娴嬪埌鎵?鉁擄細浜旀寚寮犲紑 鎴?鎷囨寚椋熸寚鎹忓悎 鈫?鏄熷厜缁芥斁锛涘叾瀹冨Э鍔挎槸鎮仠锛屾寚灏栦綅缃壍寮曟槦鍏?);
           }
         }, 1200);
 
-        // ?motion 直接进挥手模式（不等 MediaPipe 卡死），方便调试
+        // ?motion 鐩存帴杩涙尌鎵嬫ā寮忥紙涓嶇瓑 MediaPipe 鍗℃锛夛紝鏂逛究璋冭瘯
         if (/[?&]motion\b/.test(location.search)) {
           document.addEventListener('DOMContentLoaded', function () {
-            setTimeout(function () { window.__CT_START_MOTION__('挥手模式已开启：对着镜头挥手 → 星光绽放；手左右移动 → 树跟着转'); }, 800);
+            setTimeout(function () { window.__CT_START_MOTION__('鎸ユ墜妯″紡宸插紑鍚細瀵圭潃闀滃ご鎸ユ墜 鈫?鏄熷厜缁芥斁锛涙墜宸﹀彸绉诲姩 鈫?鏍戣窡鐫€杞?); }, 800);
           });
         }
 
-        // ?diag 诊断浮层：把 MediaPipe 的实时计数和 video 状态打在屏幕上，
-        // 方便一眼看出是「没检测到手」还是「画面根本没在走」。
-        if (/[?&]diag\b/.test(location.search)) {
+        // ?diag 璇婃柇娴眰锛氭妸 MediaPipe 鐨勫疄鏃惰鏁板拰 video 鐘舵€佹墦鍦ㄥ睆骞曚笂锛?        // 鏂逛究涓€鐪肩湅鍑烘槸銆屾病妫€娴嬪埌鎵嬨€嶈繕鏄€岀敾闈㈡牴鏈病鍦ㄨ蛋銆嶃€?        if (/[?&]diag\b/.test(location.search)) {
           var box = document.createElement('div');
           box.style.cssText = 'position:fixed;left:8px;bottom:8px;z-index:99998;padding:8px 10px;' +
             'border-radius:10px;font:11px/1.5 ui-monospace,Consolas,monospace;white-space:pre;' +
@@ -333,10 +319,10 @@
               var d = window.__gestureDiag || {};
               var v = document.querySelector('video');
               var lines = [
-                'diag  ' + (window.__gestureDiag ? 'on' : 'off(点手势按钮)'),
+                'diag  ' + (window.__gestureDiag ? 'on' : 'off(鐐规墜鍔挎寜閽?'),
                 'frames ' + (d.frames || 0) + '   results ' + (d.results || 0),
                 'noHand ' + (d.noHand || 0) + '   sendErr ' + (d.sendErrors || 0),
-                'hand   ' + (d.results ? (100 - Math.round((d.noHand || 0) * 100 / d.results)) + '% 检测到' : '-'),
+                'hand   ' + (d.results ? (100 - Math.round((d.noHand || 0) * 100 / d.results)) + '% 妫€娴嬪埌' : '-'),
                 'video  ' + (v ? (v.videoWidth + 'x' + v.videoHeight + ' rs' + v.readyState + (v.paused ? ' PAUSED' : ' play')) : 'none'),
                 'dpr ' + window.__CT_CAP__ + '  gpu ' + window.__CT_GPU__
               ];
@@ -353,9 +339,9 @@
       })();
     </script>
 
-    <!-- 性能补丁 1：限制渲染像素比（高分屏 150% 缩放会渲染 1.5 倍像素，很吃显卡） -->
-    <!-- 性能补丁 2：探测显卡；软件渲染（没开硬件加速 / 远程桌面 / 虚拟显示器）自动切省电模式 -->
-    <!-- 性能补丁 3：进场后自动测帧，烫手就逐级降分辨率（1.25 → 0.9 → 0.75） -->
+    <!-- 鎬ц兘琛ヤ竵 1锛氶檺鍒舵覆鏌撳儚绱犳瘮锛堥珮鍒嗗睆 150% 缂╂斁浼氭覆鏌?1.5 鍊嶅儚绱狅紝寰堝悆鏄惧崱锛?-->
+    <!-- 鎬ц兘琛ヤ竵 2锛氭帰娴嬫樉鍗★紱杞欢娓叉煋锛堟病寮€纭欢鍔犻€?/ 杩滅▼妗岄潰 / 铏氭嫙鏄剧ず鍣級鑷姩鍒囩渷鐢垫ā寮?-->
+    <!-- 鎬ц兘琛ヤ竵 3锛氳繘鍦哄悗鑷姩娴嬪抚锛岀儷鎵嬪氨閫愮骇闄嶅垎杈ㄧ巼锛?.25 鈫?0.9 鈫?0.75锛?-->
     <script>
       (function () {
         var software = false;
@@ -386,7 +372,7 @@
             configurable: true,
             get: function () { return window.__CT_CAP__; }
           });
-        } catch (e) { /* 忽略 */ }
+        } catch (e) { /* 蹇界暐 */ }
 
         function setCap(v) {
           if (v >= window.__CT_CAP__) return;
@@ -411,8 +397,8 @@
               'max-width:560px;padding:10px 14px;border-radius:12px;font:13px/1.6 system-ui,"Microsoft YaHei";' +
               'background:rgba(30,12,12,.92);color:#ffd9a0;border:1px solid rgba(255,120,120,.5);' +
               'box-shadow:0 8px 30px rgba(0,0,0,.5);cursor:pointer';
-            tip.textContent = '⚠ 检测到浏览器在用「软件渲染」（没吃到显卡），画面会很卡。点这里看解决办法';
-            tip.title = '点一下关闭';
+            tip.textContent = '鈿?妫€娴嬪埌娴忚鍣ㄥ湪鐢ㄣ€岃蒋浠舵覆鏌撱€嶏紙娌″悆鍒版樉鍗★級锛岀敾闈細寰堝崱銆傜偣杩欓噷鐪嬭В鍐冲姙娉?;
+            tip.title = '鐐逛竴涓嬪叧闂?;
             tip.onclick = function () { tip.remove(); };
             document.body.appendChild(tip);
           }
@@ -433,5 +419,86 @@
   </head>
   <body>
     <div id="root"></div>
+    <script>
+      // 触点改写：按住屏幕任意位置（包括照片）都是「绽放」；照片改成轻点才推近放大。
+      // 做法：在 window 捕获阶段吞掉真实的 pointerdown，再按「长按 / 拖动 / 轻点」三种意图
+      // 分别向 canvas 重放合成事件——长按重放到空白处（触发全场景绽放），轻点原样重放（触发照片放大）。
+      (function () {
+        function big() {
+          var all = document.querySelectorAll('canvas'), best = null, area = 0;
+          for (var i = 0; i < all.length; i++) {
+            var r = all[i].getBoundingClientRect(), a = r.width * r.height;
+            if (a > area) { area = a; best = all[i]; }
+          }
+          return best;
+        }
+        function fire(cv, type, x, y, buttons) {
+          if (!cv) return;
+          try {
+            cv.dispatchEvent(new PointerEvent(type, {
+              bubbles: true, cancelable: true, composed: true,
+              clientX: x, clientY: y, pointerId: 91, pointerType: 'touch',
+              isPrimary: true, button: type === 'pointerup' ? -1 : 0, buttons: buttons
+            }));
+          } catch (e) {}
+        }
+        var st = { mode: null, t0: 0, x: 0, y: 0, hold: 0, lx: 0, ly: 0 };
+
+        window.addEventListener('pointerdown', function (e) {
+          if (!e.isTrusted || e.pointerId === 91) return;
+          var cv = big();
+          if (!cv || e.target !== cv) return;
+          e.stopPropagation(); e.stopImmediatePropagation();
+          st.mode = 'pending'; st.t0 = Date.now();
+          st.x = st.lx = e.clientX; st.y = st.ly = e.clientY;
+          clearTimeout(st.hold);
+          st.hold = setTimeout(function () {
+            if (st.mode !== 'pending') return;
+            st.mode = 'hold';
+            var r = cv.getBoundingClientRect();
+            // 空白点：左下角（不落在照片框上），按在这里等价于「按住空白 → 绽放」
+            fire(cv, 'pointerdown', r.left + r.width * 0.06, r.top + r.height * 0.86, 1);
+          }, 300);
+        }, true);
+
+        window.addEventListener('pointermove', function (e) {
+          if (!e.isTrusted || e.pointerId === 91) return;
+          var cv = big();
+          if (st.mode === 'pending') {
+            if (Math.abs(e.clientX - st.x) + Math.abs(e.clientY - st.y) < 12) return;
+            st.mode = 'drag'; clearTimeout(st.hold);
+            fire(cv, 'pointerdown', st.x, st.y, 1);
+            fire(cv, 'pointermove', e.clientX, e.clientY, 1);
+            st.lx = e.clientX; st.ly = e.clientY;
+            return;
+          }
+          if (st.mode === 'drag') {
+            e.stopPropagation(); e.stopImmediatePropagation();
+            fire(cv, 'pointermove', e.clientX, e.clientY, 1);
+            st.lx = e.clientX; st.ly = e.clientY;
+          }
+        }, true);
+
+        function finish(e) {
+          if (!e.isTrusted || e.pointerId === 91) return;
+          var cv = big();
+          if (!st.mode) return;
+          e.stopPropagation(); e.stopImmediatePropagation();
+          clearTimeout(st.hold);
+          var m = st.mode; st.mode = null;
+          if (m === 'pending') {          // 轻点：原样重放，照片会推近放大
+            fire(cv, 'pointerdown', st.x, st.y, 1);
+            fire(cv, 'pointerup', st.x, st.y, 0);
+          } else if (m === 'drag') {
+            fire(cv, 'pointerup', st.lx, st.ly, 0);
+          } else if (m === 'hold') {      // 长按绽放：在空白点松开
+            var r = cv.getBoundingClientRect();
+            fire(cv, 'pointerup', r.left + r.width * 0.06, r.top + r.height * 0.86, 0);
+          }
+        }
+        window.addEventListener('pointerup', finish, true);
+        window.addEventListener('pointercancel', finish, true);
+      })();
+    </script>
   </body>
 </html>
