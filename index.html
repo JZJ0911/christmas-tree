@@ -121,7 +121,7 @@
           var cw = 64, ch = 48, cv = document.createElement('canvas');
           cv.width = cw; cv.height = ch;
           var cx2 = cv.getContext('2d', { willReadFrequently: true });
-          var prev = null, down = false, lastMove = 0;
+          var prev = null, down = false, lastMove = 0, upAt = 0;
 
           function bigCanvas() {
             var best = null, bestArea = 0;
@@ -147,7 +147,9 @@
                 button: type === 'pointerup' ? -1 : 0, buttons: buttons
               });
             } catch (e) { return; }
+            if (type === 'pointerdown') { try { el.setPointerCapture(77); } catch (e) {} }
             el.dispatchEvent(ev);
+            if (type === 'pointerup') { try { el.releasePointerCapture(77); } catch (e) {} }
           }
 
           function tick() {
@@ -160,16 +162,20 @@
                 cx2.drawImage(v, 0, 0, cw, ch);
                 var cur = cx2.getImageData(0, 0, cw, ch).data;
                 if (prev) {
-                  var sum = 0, wx = 0, wsum = 0;
+                  // 只统计「变化明显」的像素（>18 灰度），这样自动曝光/噪点不会误触发，
+                  // energy 就是「画面里有多大比例在动」，单位是百分比。
+                  var hits = 0, wx = 0, wsum = 0;
                   for (var i = 0; i < cur.length; i += 4) {
                     var g1 = (cur[i] * 0.3 + cur[i + 1] * 0.59 + cur[i + 2] * 0.11);
                     var g0 = (prev[i] * 0.3 + prev[i + 1] * 0.59 + prev[i + 2] * 0.11);
-                    var d = Math.abs(g1 - g0);
-                    sum += d;
-                    var px = (i / 4) % cw;
-                    wx += d * px; wsum += d;
+                    var d = g1 > g0 ? g1 - g0 : g0 - g1;
+                    if (d > 18) {
+                      hits++;
+                      var px = (i / 4) % cw;
+                      wx += d * px; wsum += d;
+                    }
                   }
-                  energy = sum / (cw * ch);
+                  energy = hits / (cw * ch) * 100;
                   if (wsum > 1) cxr = 1 - (wx / wsum) / cw; // 镜像，和前置摄像头一致
                 }
                 prev = cur;
@@ -178,8 +184,9 @@
             M.energy = energy;
             if (energy > M.maxEnergy) M.maxEnergy = energy;
 
-            var TH = 3.2;              // 判定为「在动」的阈值（0-255 灰度差均值）
+            var TH = 2.5;              // 判定为「在动」的阈值（画面变化像素占比 %）
             var moving = energy > TH;
+            if (moving) { if (!down) { upAt = 0; } } else { if (!upAt) upAt = Date.now(); }
             if (moving && !down) {
               down = true; M.active = true;
               fire('pointerdown', cxr, 0.5, 1);   // 按住 → 星光绽放
@@ -189,7 +196,7 @@
                 fire('pointermove', cxr, 0.5, 1); // 左右移动 → 转动
                 lastMove = Date.now();
               }
-            } else if (!moving && down && energy < TH * 0.5) {
+            } else if (!moving && down && upAt && Date.now() - upAt > 320) {
               down = false; M.active = false;
               fire('pointerup', cxr, 0.5, 0);
             }
