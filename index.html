@@ -477,7 +477,7 @@
             st.mode = 'hold';
             var q = emptySpot(cv);
             fire(cv, 'pointerdown', q.x, q.y, 1);
-          }, 300);
+          }, 520);
         }, true);
 
         window.addEventListener('pointermove', function (e) {
@@ -516,7 +516,7 @@
                   clientX: st.x, clientY: st.y, button: 0
                 }));
               } catch (e2) {}
-            }, 140);
+            }, 220);
           } else if (m === 'drag') {
             fire(cv, 'pointerup', st.lx, st.ly, 0);
           } else if (m === 'hold') {
