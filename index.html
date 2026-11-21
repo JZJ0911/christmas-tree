@@ -77,7 +77,24 @@
         }
         var orig = md.getUserMedia.bind(md);
         navigator.mediaDevices.getUserMedia = function (c) {
-          return orig(c).catch(function (e) {
+          // 强制前置摄像头 + 合适分辨率：安卓上默认可能开成后置，画面里没有手，
+          // 表现就是「一直手势识别中但没反应」。
+          var cc = c;
+          try {
+            if (c && c.video) {
+              var v = (typeof c.video === 'object' && c.video) ? c.video : {};
+              if (!v.deviceId) {
+                cc = Object.assign({}, c, {
+                  video: Object.assign({}, v, {
+                    facingMode: { ideal: 'user' },
+                    width: { ideal: 640 },
+                    height: { ideal: 480 }
+                  })
+                });
+              }
+            }
+          } catch (e) {}
+          return orig(cc).catch(function (e) {
             var n = (e && e.name) || '未知错误';
             var msg = n === 'NotAllowedError'
               ? '摄像头权限被拒绝了。请在浏览器/系统里允许本页面使用摄像头，然后刷新重试'
@@ -88,6 +105,22 @@
             throw e;
           });
         };
+
+        // 手势状态看门狗：页面里有 window.__gestureDiag = {frames,results,noHand,...}
+        // 一直检测不到手时给一句人话提示，检测到了就提示怎么用。
+        var hintShown = false;
+        setInterval(function () {
+          var d = window.__gestureDiag;
+          if (!d || !d.results || d.results < 15 || hintShown) return;
+          var ratio = d.noHand / d.results;
+          if (ratio > 0.95) {
+            hintShown = true;
+            tip('镜头里没看到手。把整只手掌伸到相机前 20~30 厘米，让手完整出现在右下角小窗里，停 1 秒');
+          } else {
+            hintShown = true;
+            tip('已检测到手 ✓：五指张开 或 拇指食指捏合 → 星光绽放；其它姿势是悬停，指尖位置牵引星光');
+          }
+        }, 1500);
       })();
     </script>
 
