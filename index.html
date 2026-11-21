@@ -508,6 +508,13 @@
           if (m === 'pending') {
             fire(cv, 'pointerdown', st.x, st.y, 1);
             fire(cv, 'pointerup', st.x, st.y, 0);
+            // 3D 场景的「点一下」是靠 DOM click 派发的，补一个，照片才会推近放大
+            try {
+              cv.dispatchEvent(new MouseEvent('click', {
+                bubbles: true, cancelable: true, composed: true,
+                clientX: st.x, clientY: st.y, button: 0
+              }));
+            } catch (e2) {}
           } else if (m === 'drag') {
             fire(cv, 'pointerup', st.lx, st.ly, 0);
           } else if (m === 'hold') {
