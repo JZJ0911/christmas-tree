@@ -32,6 +32,47 @@
         100% { background-position: 0% 200%; }
       }
     </style>
+    <!-- 摄像头诊断：微信/QQ 内置浏览器没有 getUserMedia，直接给可读提示 -->
+    <script>
+      (function () {
+        var shown = false;
+        function tip(msg) {
+          if (shown) return;
+          shown = true;
+          var d = document.createElement('div');
+          d.style.cssText = 'position:fixed;left:50%;top:16px;transform:translateX(-50%);z-index:99999;' +
+            'max-width:88vw;padding:12px 16px;border-radius:14px;font:14px/1.65 system-ui,"Microsoft YaHei",sans-serif;' +
+            'background:rgba(40,14,14,.95);color:#ffe0b8;border:1px solid rgba(255,140,120,.55);' +
+            'box-shadow:0 10px 34px rgba(0,0,0,.55);cursor:pointer;text-align:left';
+          d.textContent = msg + '（点此关闭）';
+          d.onclick = function () { d.remove(); shown = false; };
+          (document.body || document.documentElement).appendChild(d);
+        }
+        window.__CT_TIP__ = tip;
+
+        var md = navigator.mediaDevices;
+        if (!md || typeof md.getUserMedia !== 'function') {
+          document.addEventListener('DOMContentLoaded', function () {
+            tip('这个浏览器不支持调用摄像头（微信 / QQ 内置浏览器里常见）。请点右上角「…」→「在浏览器中打开」，用 Safari 或 Chrome 再看');
+          });
+          return;
+        }
+        var orig = md.getUserMedia.bind(md);
+        navigator.mediaDevices.getUserMedia = function (c) {
+          return orig(c).catch(function (e) {
+            var n = (e && e.name) || '未知错误';
+            var msg = n === 'NotAllowedError'
+              ? '摄像头权限被拒绝了。请在浏览器/系统里允许本页面使用摄像头，然后刷新重试'
+              : n === 'NotFoundError'
+                ? '没找到可用的摄像头'
+                : '摄像头打不开（' + n + '）。如果是微信里打开的，请改用 Safari / Chrome';
+            tip(msg);
+            throw e;
+          });
+        };
+      })();
+    </script>
+
     <!-- 性能补丁 1：限制渲染像素比（高分屏 150% 缩放会渲染 1.5 倍像素，很吃显卡） -->
     <!-- 性能补丁 2：探测显卡；软件渲染（没开硬件加速 / 远程桌面 / 虚拟显示器）自动切省电模式 -->
     <!-- 性能补丁 3：进场后自动测帧，烫手就逐级降分辨率（1.25 → 0.9 → 0.75） -->
