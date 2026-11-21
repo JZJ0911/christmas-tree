@@ -107,15 +107,25 @@
         };
 
         // 手势状态看门狗：页面里有 window.__gestureDiag = {frames,results,noHand,...}
-        // 一直检测不到手时给一句人话提示，检测到了就提示怎么用。
-        var hintShown = false;
+        // 三种情况分别给提示：引擎卡死 / 认不出手 / 认出上手怎么玩
+        var hintShown = false, stallShown = false, diagSince = 0;
         setInterval(function () {
           var d = window.__gestureDiag;
-          if (!d || !d.results || d.results < 15 || hintShown) return;
+          if (!d) { diagSince = 0; return; }
+          if (!diagSince) diagSince = Date.now();
+          var elapsed = Date.now() - diagSince;
+
+          // 收到画面但一帧都没算完 → send() 卡住（微信/WKWebView 里常见）
+          if (!stallShown && d.frames >= 1 && d.results === 0 && elapsed > 10000) {
+            stallShown = true;
+            tip('手势引擎卡住了：画面进来了，但一帧都没算完。这通常是微信内置浏览器的限制——点右上角「…」→「在浏览器中打开」，用 Safari 再试');
+            return;
+          }
+          if (!d.results || d.results < 15 || hintShown) return;
           var ratio = d.noHand / d.results;
           if (ratio > 0.95) {
             hintShown = true;
-            tip('镜头里没看到手。把整只手掌伸到相机前 20~30 厘米，让手完整出现在右下角小窗里，停 1 秒');
+            tip('镜头里看到画面，但没认出你的手：把手退到离镜头 30~50 厘米，让手腕到指尖整只手都在框里，别背光，五指张开停 1 秒');
           } else {
             hintShown = true;
             tip('已检测到手 ✓：五指张开 或 拇指食指捏合 → 星光绽放；其它姿势是悬停，指尖位置牵引星光');
