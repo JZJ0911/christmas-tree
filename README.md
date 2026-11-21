@@ -1,2 +1,26 @@
-# christmas-tree
-手势控制粒子圣诞树 · Gesture-controlled particle Christmas tree
+﻿# 圣诞树 · 手势控制版
+
+原作出处：抖音 @因果律信条 — https://nobody-r.github.io/christmas-tree/
+本仓库是为个人使用做的**离线镜像 + 轻量化改动**，版权归原作者，仅供学习交流。
+
+## 在线地址
+
+https://jzj0911.github.io/christmas-tree/
+
+## 改动内容
+
+- 字体改为本地宋体栈（原页面引用 Google Fonts，国内打不开会导致白屏）
+- 音乐、MediaPipe 模型全部改为本地相对路径，不再依赖任何外链
+- 音乐 6.56MB → 2.29MB（112kbps）
+- 粒子 / 礼盒 / 雪花减半，像素比封顶 1.25
+- 修掉原作者音乐频谱每帧 `setState` 导致的整树重渲染（165 次/秒）
+- 自动识别软件渲染并降档；进场后自动测帧再降分辨率
+- 补 favicon（消除 404）
+
+## 用法
+
+1. 打开页面，点一下任意位置（浏览器要求先交互才能放音乐）
+2. 右下角「手势画面」→ 允许摄像头 → 对着镜头挥手
+3. 拖动旋转、滚轮缩放
+
+摄像头需要 HTTPS（GitHub Pages 已经是），本地双击打开无效。
