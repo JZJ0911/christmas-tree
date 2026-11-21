@@ -55,6 +55,26 @@
             try { if (!els[i].loop) { els[i].loop = true; } } catch (e) {}
           }
         }
+        // 2) 兜底：任何媒体元素一播放就把它设成循环（BGM 走的是 new Audio，不一定挂在 DOM 上）
+        try {
+          var origPlay = HTMLMediaElement.prototype.play;
+          HTMLMediaElement.prototype.play = function () {
+            try {
+              this.loop = true;
+              if (this.tagName === 'AUDIO') { window.__CT_AUDIO__ = this; }
+            } catch (e) {}
+            return origPlay.apply(this, arguments);
+          };
+          document.addEventListener('play', function (e) {
+            try {
+              var t = e.target;
+              if (t && (t.tagName === 'AUDIO' || t.tagName === 'VIDEO')) {
+                t.loop = true;
+                if (t.tagName === 'AUDIO') { window.__CT_AUDIO__ = t; }
+              }
+            } catch (e2) {}
+          }, true);
+        } catch (e) {}
         if (document.readyState === 'loading') {
           document.addEventListener('DOMContentLoaded', function () {
             forceLoop();
